@@ -2,7 +2,7 @@
 
 This repository contains a modified NVDLA accelerator for the Zynq UltraScale+ platform. It utilizes [Tengine](https://github.com/OAID/Tengine) for neural network inference. The primary outcome of this project is the emulation of faults within the system.
 
-This is an example repository, it will be further improved if the paper will be accepted
+This is an example repository, it will be further improved if the paper will be accepted - we will include the necessary steps to create the software level (now you can find them here https://leiblog.wang/NVDLA-Xilinx-FPGA-Mapping)
 
 ## Project Overview
 
@@ -16,9 +16,7 @@ The project integrates Tengine and NVDLA as described in the following resources
 
 ### Software
 
-The software component is located at 
-
-[tm_classification_opendla_png_reduced.c](sw/Apps/tm_classification_opendla_png_reduced.c)
+The software component is located at [tm_classification_opendla_png_reduced.c](sw/Apps/tm_classification_opendla_png_reduced.c)
 
 . The error level can be set at the following lines:
 ```c
@@ -33,7 +31,7 @@ void fi_write_data(im_devices_t* fi_devs, uint32_t fdata, uint32_t fsel, uint32_
 
 ### Hardware
 
-The hardware fault injection is implemented in the [cmac](hw/nvdla_zcu104.ip_user_files/bd/design_1/ipshared/49a3/vmod/nvdla/cmac) folder. Verilog signals are exported and connected using AXI GPIO interfaces to be settable from the CPU.
+The hardware fault injection is implemented in the [cmac](hw/nvdla_zcu104.ip_user_files/bd/design_1/ipshared/49a3/vmod/nvdla/cmac) folder, in particular [NV_NVDLA_CMAC_CORE_mac.v](hw/nvdla_zcu104.ip_user_files/bd/design_1/ipshared/49a3/vmod/nvdla/cmac/NV_NVDLA_CMAC_CORE_mac.v) and [fault_injection_mux.v](hw/nvdla_zcu104.ip_user_files/bd/design_1/ipshared/49a3/vmod/nvdla/cmac/fault_injection_mux.v) files. The control signals are exported to the top-level entity and connected using AXI GPIO interfaces to be settable from the CPU.
 
 #### Verilog Signals
 ```verilog

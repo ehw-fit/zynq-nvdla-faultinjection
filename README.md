@@ -2,7 +2,7 @@
 
 This repository contains a modified NVDLA accelerator for the Zynq UltraScale+ platform. It utilizes [Tengine](https://github.com/OAID/Tengine) for neural network inference. The primary outcome of this project is the emulation of faults within the system.
 
-This is an example repository, it will be further improved if the paper will be accepted - we will include the necessary steps to create the software level (now you can find them here https://leiblog.wang/NVDLA-Xilinx-FPGA-Mapping)
+This is an initial review-version of the repository, it will be further improved - we will include the necessary steps to create the software level (now you can find them here https://leiblog.wang/NVDLA-Xilinx-FPGA-Mapping)
 
 ## Project Overview
 

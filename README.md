@@ -2,6 +2,25 @@
 
 This repository contains a modified NVDLA accelerator for the Zynq UltraScale+ platform. It utilizes [Tengine](https://github.com/OAID/Tengine) for neural network inference. The primary outcome of this project is the emulation of faults within the system.
 
+## Reference
+This repository is described in detail in the following publication. 
+
+MASÁR Filip, MRÁZEK Vojtěch and SEKANINA Lukáš. Late Breaking Result: FPGA-Based Emulation and Fault Injection for CNN Inference Accelerators. In: 2025 Design, Automation & Test in Europe Conference & Exhibition (DATE). Lyon: Institute of Electrical and Electronics Engineers, 2025, p. 2.
+
+```bibtex
+@INPROCEEDINGS{masar:date25,
+   author = "Filip Masar and Vojtech Mrazek and Lukas Sekanina",
+   title = "Late Breaking Result: FPGA-Based Emulation and Fault Injection for CNN Inference Accelerators",
+   pages = 2,
+   booktitle = "2025 Design, Automation \& Test in Europe Conference \& Exhibition (DATE)",
+   year = 2025,
+   location = "Lyon, FR",
+   publisher = "Institute of Electrical and Electronics Engineers"
+}
+```
+
+
+
 This is an initial review-version of the repository, it will be further improved - we will include the necessary steps to create the software level (now you can find them here https://leiblog.wang/NVDLA-Xilinx-FPGA-Mapping)
 
 ## Project Overview
@@ -16,9 +35,8 @@ The project integrates Tengine and NVDLA as described in the following resources
 
 ### Software
 
-The software component is located at [tm_classification_opendla_png_reduced.c](sw/Apps/tm_classification_opendla_png_reduced.c)
+The software component is located at [tm_classification_opendla_png_reduced.c](sw/Apps/tm_classification_opendla_png_reduced.c) The error level can be set at the following lines:
 
-. The error level can be set at the following lines:
 ```c
 void fi_write_data(im_devices_t* fi_devs, uint32_t fdata, uint32_t fsel, uint32_t sel_a, uint32_t sel_b)
 {

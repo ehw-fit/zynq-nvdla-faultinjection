@@ -22,6 +22,12 @@
  * Author: qtang@openailab.com
  */
 
+/*
+ * 2024 Modified by Filip Masar
+ * Run classification on reduced part (100 per class) of CIFAR-10 dataset
+ * CPU Float
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -242,7 +248,7 @@ void show_usage()
         "mean[0],mean[1],mean[2]] [-r loop_count] [-t thread_count] [-a cpu_affinity]\n");
     fprintf(
         stderr,
-        "\nmobilenet example: \n    ./classification -m /path/to/mobilenet.tmfile -i /path/to/img.png -g 224,224 -s "
+        "\nresnet18 example: \n    ./classification -m /path/to/resnet18.tmfile -i /path/to/CIFAR10/ -g 32,32 -s "
         "0.017,0.017,0.017 -w 104.007,116.669,122.679\n");
 }
 

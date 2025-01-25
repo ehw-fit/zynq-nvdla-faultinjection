@@ -22,6 +22,13 @@
  * Author: qtang@openailab.com
  */
 
+/*
+ * 2024 Modified by Filip Masar
+ * Run classification on reduced part (100 per class) of CIFAR-10 dataset
+ * Classification with fault injection
+ * NVDLA small INT8
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -51,21 +58,29 @@
 
 #define MMAP_SIZE 4
 
+// Single fault injection device
 typedef struct
 {
+    // file descriptor
     int fd;
+    // pointer from mmap
     uint32_t* ptr;
 } im_single_device_t;
 
+// Struct for keeping pointer to each fault injection device
 typedef struct
 {
+    // fi value which is routed into each MAC unit (18 bits)
     im_single_device_t fi_mux_fdata_in;
+    // nit mask for selecting which bit of fi value should be injected (18 bits)
     im_single_device_t fi_mux_fsel_in;
+    // bit mask selection of which multiplier the fi should be performed in (partition ma) (32 bits)
     im_single_device_t fi_mux_sel_a;
+    // bit mask selection of which multiplier the fi should be performed in (partition mb) (32 bits)
     im_single_device_t fi_mux_sel_b;
 } im_devices_t;
 
-// Source: https://stackoverflow.com/a/1157217
+// Source: https://stackoverflow.com/a/1157217 by caf
 /* msleep(): Sleep for the requested number of milliseconds. */
 int msleep(long msec)
 {
@@ -89,6 +104,7 @@ int msleep(long msec)
 }
 // END
 
+// Map one uio device into memory
 int fi_init_single_device(im_single_device_t* fi_dev, char* device_name)
 {
     fi_dev->fd = 0;
@@ -115,6 +131,7 @@ int fi_init_single_device(im_single_device_t* fi_dev, char* device_name)
     return 0;
 }
 
+// Initialize all fault injection devices
 int fi_init_devices(im_devices_t* fi_devs)
 {
     fi_devs->fi_mux_fdata_in.fd = 0;
@@ -134,6 +151,7 @@ int fi_init_devices(im_devices_t* fi_devs)
     return 0;
 }
 
+// Unmap one uio device from memory
 void fi_close_single_devices(im_single_device_t* fi_dev)
 {
     if (fi_dev->fd > 0)
@@ -148,6 +166,7 @@ void fi_close_single_devices(im_single_device_t* fi_dev)
     }
 }
 
+// Close all fault injection devices
 void fi_close_devices(im_devices_t* fi_devs)
 {
     fi_close_single_devices(&fi_devs->fi_mux_fdata_in);
@@ -156,6 +175,7 @@ void fi_close_devices(im_devices_t* fi_devs)
     fi_close_single_devices(&fi_devs->fi_mux_sel_b);
 }
 
+// Perform fault injection
 void fi_write_data(im_devices_t* fi_devs, uint32_t fdata, uint32_t fsel, uint32_t sel_a, uint32_t sel_b)
 {
     *fi_devs->fi_mux_fdata_in.ptr = fdata;
@@ -164,6 +184,7 @@ void fi_write_data(im_devices_t* fi_devs, uint32_t fdata, uint32_t fsel, uint32_
     *fi_devs->fi_mux_sel_b.ptr = sel_b;
 }
 
+// Get image data with scale calculation
 void get_input_int8_data(const char* image_file, int8_t* input_data, int img_h, int img_w, float* mean, float* scale,
                          float input_scale)
 {
@@ -185,6 +206,7 @@ void get_input_int8_data(const char* image_file, int8_t* input_data, int img_h, 
     free_image(img);
 }
 
+// Prepare tengine graph from mode
 graph_t prepare_graph(const char* model_file)
 {
     /* inital tengine */
@@ -213,6 +235,7 @@ graph_t prepare_graph(const char* model_file)
     return graph;
 }
 
+// Input tensor for image
 tensor_t prepare_input_tensor(graph_t graph, int img_h, int img_w)
 {
     tensor_t input_tensor = get_graph_input_tensor(graph, 0, 0);
@@ -232,6 +255,7 @@ tensor_t prepare_input_tensor(graph_t graph, int img_h, int img_w)
     return input_tensor;
 }
 
+// Get the id of highest rated class
 int get_top_result(int8_t* data, int total_num)
 {
     int8_t max = INT8_MIN;
@@ -248,15 +272,7 @@ int get_top_result(int8_t* data, int total_num)
     return max_id;
 }
 
-char* get_next_comma(char* str, size_t size)
-{
-    if (size > 0)
-    {
-        return strtok(str, ",");
-    }
-    return 0;
-}
-
+// Parse next line from fault injection csv file
 int read_injection_settings(FILE* fp, uint32_t* fdata_in, uint32_t* fsel_in, uint32_t* sel_a, uint32_t* sel_b)
 {
     char cache[256];
@@ -279,6 +295,7 @@ int read_injection_settings(FILE* fp, uint32_t* fdata_in, uint32_t* fsel_in, uin
     return 1;
 }
 
+// Perform classification for each image with fault injection
 int tengine_classify(const char* model_file, const char* collection_path, int img_h, int img_w, float* mean, float* scale,
                      int loop_count, int num_thread, const char* inject_settings_file, const char* output_data_file)
 {
@@ -303,6 +320,7 @@ int tengine_classify(const char* model_file, const char* collection_path, int im
         return -2;
     }
 
+    // Initialization of fi devices
     im_devices_t fi_devices;
     if (fi_init_devices(&fi_devices) != 0)
     {
@@ -343,12 +361,14 @@ int tengine_classify(const char* model_file, const char* collection_path, int im
     uint32_t sel_a = 0;
     uint32_t sel_b = 0;
 
+    // Get accuracy for each fi configuration in input file
     while (read_injection_settings(is_fp, &fdata_in, &fsel_in, &sel_a, &sel_b))
     {
         int success_count = 0;
         int failed_count = 0;
-        fi_write_data(&fi_devices, fdata_in, fsel_in, sel_a, sel_b);
-        msleep(100);
+        fi_write_data(&fi_devices, fdata_in, fsel_in, sel_a, sel_b);  // Inject fault
+        msleep(100);  // Wait to ensure that fault is correctly injected
+        // Perform classification for each image to get network accuracy
         for (int class = 0; class < NUMBER_OF_CLASSES; class ++)
         {
             for (int sample = 1; sample <= NUMBER_OF_SAMPLES; sample++)
@@ -387,6 +407,7 @@ int tengine_classify(const char* model_file, const char* collection_path, int im
                     break;
                 }
 
+                // get input data
                 get_input_int8_data(image_file, input_data, img_h, img_w, mean, scale, input_scale);
                 if (set_tensor_buffer(input_tensor, input_data, img_size) < 0)
                 {
@@ -394,6 +415,7 @@ int tengine_classify(const char* model_file, const char* collection_path, int im
                     return -1;
                 }
 
+                // Run network on NVDLA
                 double start = get_current_time();
                 if (run_graph(graph, 1) < 0)
                 {
@@ -455,8 +477,8 @@ void show_usage()
         "mean[0],mean[1],mean[2]] [-r loop_count] [-t thread_count] [-f fault_injection_csv] [-d output_csv]\n");
     fprintf(
         stderr,
-        "\nmobilenet example: \n    ./classification -m /path/to/mobilenet.tmfile -i /path/to/img.jpg -g 224,224 -s "
-        "0.017,0.017,0.017 -w 104.007,116.669,122.679\n");
+        "\nresnet18 example: \n    ./classification -m /path/to/resnet18.tmfile -i /path/to/CIFAR10/ -g 32,32 -s "
+        "0.017,0.017,0.017 -w 104.007,116.669,122.679 -f /path/to/fault_injection.csv -f /path/to/output.csv\n");
 }
 
 int main(int argc, char* argv[])

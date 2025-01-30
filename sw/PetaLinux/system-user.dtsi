@@ -1,0 +1,69 @@
+/include/ "system-conf.dtsi"
+/ {
+
+    gpio@b0000000{
+        compatible = "axi_gpio_0, generic-uio, ui_pdrv"; 
+        status = "okay";
+    };
+
+    gpio@b0010000{
+        compatible = "axi_gpio_1, generic-uio, ui_pdrv"; 
+        status = "okay";
+    };
+
+    gpio@b0020000{
+        compatible = "axi_gpio_2, generic-uio, ui_pdrv"; 
+        status = "okay";
+    };
+
+    gpio@b0030000{
+        compatible = "axi_gpio_3, generic-uio, ui_pdrv"; 
+        status = "okay";
+    };
+
+
+memory@0 {
+
+device_type = "memory";
+
+reg = <0x000000000 0x00000000 0x00000000 0x80000000>;
+
+};
+
+memory@400000000 {
+    device_type = "memory";
+    reg = <0x000000004 0x00000000 0x00000001 0x00000000>;
+};
+
+    reserved-memory {
+	    #address-cells = <2>;
+	    #size-cells = <2>;
+	    ranges;
+
+	    nvdla_reserved: buffer@0 {
+		      no-map;
+		      reg = <0x0 0x40000000 0x0 0x40000000>;
+	    };
+    };
+};
+
+&axi_gpio_0 {
+    compatible = "generic-uio";
+};
+
+&axi_gpio_1 {
+    compatible = "generic-uio";
+};
+
+&axi_gpio_2 {
+    compatible = "generic-uio";
+};
+
+&axi_gpio_3 {
+    compatible = "generic-uio";
+};
+
+&NV_nvdla_wrapper_0{
+    compatible = "nvidia,nv_small";
+    memory-region = <&nvdla_reserved>;
+};

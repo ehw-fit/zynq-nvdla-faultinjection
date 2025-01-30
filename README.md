@@ -1,4 +1,5 @@
 # ZYNQ NVDLA Fault Injection
+[![arXiv](https://img.shields.io/badge/arXiv-2501.12818-b31b1b.svg)](https://arxiv.org/abs/2501.12818)
 
 This repository contains a modified NVDLA accelerator for the Zynq UltraScale+ platform. It utilizes [Tengine](https://github.com/OAID/Tengine) for neural network inference. The primary outcome of this project is the emulation of faults within the system.
 
@@ -6,6 +7,7 @@ This repository contains a modified NVDLA accelerator for the Zynq UltraScale+ p
 This repository is described in detail in the following publication. 
 
 MASÁR Filip, MRÁZEK Vojtěch and SEKANINA Lukáš. Late Breaking Result: FPGA-Based Emulation and Fault Injection for CNN Inference Accelerators. In: 2025 Design, Automation & Test in Europe Conference & Exhibition (DATE). Lyon: Institute of Electrical and Electronics Engineers, 2025, p. 2.
+[Preprint](https://arxiv.org/abs/2501.12818)
 
 ```bibtex
 @INPROCEEDINGS{masar:date25,

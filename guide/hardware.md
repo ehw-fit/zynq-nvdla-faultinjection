@@ -1,15 +1,15 @@
 # 2. Hardware Design
 # 2.1 RTL Generation
 ### 2.1.1 Environment Setup and RTL Generation
-There is the official [Environment Setup Guide](http://nvdla.org/hw/v2/environment_setup_guide.html) for NVDLA RTL generation.
+There is an official [Environment Setup Guide](http://nvdla.org/hw/v2/environment_setup_guide.html) for NVDLA RTL generation.
 
-You need to get source code for NVDLA small configuration.
+You will need to obtain source code for the NVDLA small configuration.
 ```shell
 git clone https://github.com/nvdla/hw
 git checkout nv_small
 ```
 
-Then environment configuration is required with `make` command. Generation of RTL is not so dependent on a specific tool version.
+Then environment configuration is required with the `make` command. RTL generation is not so dependent on a specific tool version.
 For example these tools and version were used for project:
 ```
 - cpp/gcc/g++ - gcc (GCC) 12.2.1 20230201
@@ -19,26 +19,26 @@ For example these tools and version were used for project:
 - clang - clang version 15.0.7
 ```
 
-After that RTL can be generated.
+RTL can then be generated.
 ```shell
 ./tools/bin/tmake -build vmod
 ```
 
 The RTL output files can be found in the `out/nv_small/vmod` directory.
 
-> **_NOTE:_** There is also unofficial Docker Image with prepared environment [farhanaslam/nvdla](https://hub.docker.com/r/farhanaslam/nvdla).
+> **_NOTE:_** There is also an unofficial Docker Image with a prepared environment [farhanaslam/nvdla](https://hub.docker.com/r/farhanaslam/nvdla).
 
 ### 2.1.2 Modification of the RTL for FPGA
-NVDLA is designed for ASIC, which means that it also has RTL for internal RAM. This is unwanted because on FPGA,  there
-RAM block will be mapped into LUT instead of BRAM.  The easiest way to do this is to delete the `synth` directory in
-`out/nv_small/vmod/rams`.
+NVDLA is designed for ASIC, which means it also has RTL for internal RAM. This is unwanted because on FPGA the RAM block
+is mapped to LUT instead of BRAM. The easiest way to do this is to delete the `synth` directory in `out/nv_small/vmod/rams`.
 
 ## 2.2 RTL modification for fault injection
-To enable fault injection, source file with MAC unit was modified (in [cmac](hw/nvdla_zcu104.ip_user_files/bd/design_1/ipshared/49a3/vmod/nvdla/cmac) folder file [NV_NVDLA_CMAC_CORE_mac.v](hw/nvdla_zcu104.ip_user_files/bd/design_1/ipshared/49a3/vmod/nvdla/cmac/NV_NVDLA_CMAC_CORE_mac.v)).
-Output from each multiplier was routed into new fi module [fault_injection_mux.v](hw/nvdla_zcu104.ip_user_files/bd/design_1/ipshared/49a3/vmod/nvdla/cmac/fault_injection_mux.v), which export modified signal
-back to MAC unit for subsequent accumulation.
+To enable fault injection, the source file with MAC unit has been modified (in [cmac](../hw/nvdla_zcu104.ip_user_files/bd/design_1/ipshared/49a3/vmod/nvdla/cmac)
+folder file [NV_NVDLA_CMAC_CORE_mac. v](../hw/nvdla_zcu104.ip_user_files/bd/design_1/ipshared/49a3/vmod/nvdla/cmac/NV_NVDLA_CMAC_CORE_mac.v)).
+The output of each multiplier has been routed to a new fi module [fault_injection_mux.v](../hw/nvdla_zcu104.ip_user_files/bd/design_1/ipshared/49a3/vmod/nvdla/cmac/fault_injection_mux.v),
+which exports the modified signal back to the MAC unit for subsequent accumulation.
 
-This leads to creation of new control signals.
+This results in the creation of new control signals.
 ```verilog
 input [18-1:0] fi_mux_fdata_in,
 input [18-1:0] fi_mux_fsel_in,
@@ -49,7 +49,7 @@ input [32-1:0] fi_mux_sel_b
 ## 2.3 Vivado Hardware Design
 Vivado 2022.1 was used.
 
-Due to porting the NVDLA on FPGA, there Verilog options were used:
+These Verilog options were used to port the NVDLA to FPGA:
 ```
 VLIB_BYPASS_POWER_CG
 NV_FPGA_FIFOGEN
@@ -62,24 +62,24 @@ DESIGNWARE_NOEXIST = 1
 RAM_DISABLE_POWER_GATING_FPGA
 ```
 
-The NVDLA is using CSB interface for communication for processor. Because of no CSB to AXI converter, the CSB to APB
-converter from the NVDLA source code was used. The wrapper for it was used from
-[Lei Wang's blog post](https://leiblog.wang/NVDLA-Xilinx-FPGA-Mapping/#1-2-1-csb2apb). And APB was converted to AXI with
-converter avaiable in Vivado.
+The NVDLA uses the CSB interface for processor communication. Since there is no CSB to AXI converter, the CSB to APB
+converter from the NVDLA source code was used. The wrapper for it was used from [Lei Wang's blog post](https://leiblog.wang/NVDLA-Xilinx-FPGA-Mapping/#1-2-1-csb2apb).
+And APB was converted to AXI using the converter available in Vivado.
 
-The resulting block design contains these main sections:
+The resulting block design includes these main sections
 - Fault injection (red)
 - NVDLA (green)
 - External memory (purple)
 
-FI control signals are routed to AXI GPIO IP core to enable FI control from software.
+The FI control signals are routed to the AXI GPIO IP core to allow software control of the FI.
 
 ![block_design](../img/block_design.png)
 
-Address mapping is as following
+Address mapping is as follows:
 ![address_editor](../img/address_editor.png)
 
-Due to usage of different Vivado and PetaLinux version, the hardware description must be exported in old HDF format with command:
+Due to the use of different Vivado and PetaLinux versions, the hardware description must be exported in the old HDF
+format using the command:
 ```shell
 write_hwdef -force -file <location>/filename.hdf
 ```
@@ -93,3 +93,10 @@ write_hwdef -force -file <location>/filename.hdf
 | FF       |   460 800 | 104 732 |     104 717 |      106 150 |
 | BRAM     |       312 |   91.50 |       91.50 |        91.50 |
 | DSP      |      1728 |      35 |          35 |           35 |
+
+## Chapters
+- [Chapter 1: NVLDA Fault Injection Introduction](./introduction.md)
+- [Chapter 2: Hardware Design](./hardware.md) (this chapter)
+- [Chapter 3: PetaLinux Preparation](./petalinux.md)
+- [Chapter 4: Software Design](./software.md)
+- [Chapter 5: Applications in this repository](./applications.md)
